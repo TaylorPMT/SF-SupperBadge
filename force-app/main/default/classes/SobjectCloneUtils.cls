@@ -8,7 +8,7 @@ public with sharing class SobjectCloneUtils {
     public Map<Id, SObject> cloneJuncRecordMap;
     public Map<String, Map<Id, Id>> relatedNameListIdMap;
     public Map<String, List<String>> filterClonableFieldsMap;
-    public static final List<CopyAccountConfiguration__mdt> COPY_ACCOUNT_CONFIG = getConfigCopyAccount();
+    public static final List<CloneConfiguation__mdt> COPY_CONFIG = getCloneConfigMeta();
     /**
      * @description Constructor without object query.  Allows more control of cloning
      * @param recordId: SObject to clone.  Must include all relevant information
@@ -129,50 +129,50 @@ public with sharing class SobjectCloneUtils {
      * List<SObject> Name : ermt__Incident_Risk_Junc__c,ermt__Risk_Control_Junc__c,ermt__Risk_Classification_Junc__c
      */
     private void createRecordJuncByRel() {
-        // Build a map Relationship Name , of clone source id and IDs
-        getMapCloneSourceId();
-        // Dml get childRelName by list clone source id
-        getRiskJuncWithRel();
-        Map<Id, Id> newRecordRiskIdMap = this.relatedNameListIdMap.get('ERMT__RISKORGANIZATION__R') != null
-            ? this.relatedNameListIdMap.get('ERMT__RISKORGANIZATION__R')
-            : new Map<Id, Id>();
-        Map<Id, Id> newRecordIncidentIdMap = this.relatedNameListIdMap.get('ERMT__INCIDENTS__R') != null
-            ? this.relatedNameListIdMap.get('ERMT__INCIDENTS__R')
-            : new Map<Id, Id>();
-        Map<Id, Id> mapIdOldNewControl = this.relatedNameListIdMap.get('ERMT__TREATMENTASSIGNEDORG__R') != null
-            ? this.relatedNameListIdMap.get('ERMT__TREATMENTASSIGNEDORG__R')
-            : new Map<Id, Id>();
+        // // Build a map Relationship Name , of clone source id and IDs
+        // getMapCloneSourceId();
+        // // Dml get childRelName by list clone source id
+        // getRiskJuncWithRel();
+        // Map<Id, Id> newRecordRiskIdMap = this.relatedNameListIdMap.get('ERMT__RISKORGANIZATION__R') != null
+        //     ? this.relatedNameListIdMap.get('ERMT__RISKORGANIZATION__R')
+        //     : new Map<Id, Id>();
+        // Map<Id, Id> newRecordIncidentIdMap = this.relatedNameListIdMap.get('ERMT__INCIDENTS__R') != null
+        //     ? this.relatedNameListIdMap.get('ERMT__INCIDENTS__R')
+        //     : new Map<Id, Id>();
+        // Map<Id, Id> mapIdOldNewControl = this.relatedNameListIdMap.get('ERMT__TREATMENTASSIGNEDORG__R') != null
+        //     ? this.relatedNameListIdMap.get('ERMT__TREATMENTASSIGNEDORG__R')
+        //     : new Map<Id, Id>();
 
-        for (Id sourceIdClone : newRecordRiskIdMap.keySet()) {
-            SObject junctionObject = this.cloneJuncRecordMap.get(sourceIdClone);
-            // Build record risk control junc
-            // The value of ermt__Risk__c is「New risk Object」、
-            // The value entered in ermt__control__c is the record created(「New Control Object」)
-            createRiskControlJunc(junctionObject, sourceIdClone, newRecordRiskIdMap, mapIdOldNewControl);
-            // Build record risk classification junc
-            createRiskClassificationJunc(junctionObject, sourceIdClone, newRecordRiskIdMap);
-            // End build record risk classification junc
+        // for (Id sourceIdClone : newRecordRiskIdMap.keySet()) {
+        //     SObject junctionObject = this.cloneJuncRecordMap.get(sourceIdClone);
+        //     // Build record risk control junc
+        //     // The value of ermt__Risk__c is「New risk Object」、
+        //     // The value entered in ermt__control__c is the record created(「New Control Object」)
+        //     createRiskControlJunc(junctionObject, sourceIdClone, newRecordRiskIdMap, mapIdOldNewControl);
+        //     // Build record risk classification junc
+        //     createRiskClassificationJunc(junctionObject, sourceIdClone, newRecordRiskIdMap);
+        //     // End build record risk classification junc
 
-            // Value of ermt__Risk__c is「New risk Object」、
-            // value of ermt__M_Classification__c will create same as「ermt__Risk_Classification_Junc__c Object」
-            // - ermt__M_Classification__c
-            // Build record incident risk junc
-            createIncidentRiskJunc(junctionObject, sourceIdClone, newRecordRiskIdMap, newRecordIncidentIdMap);
-        }
+        //     // Value of ermt__Risk__c is「New risk Object」、
+        //     // value of ermt__M_Classification__c will create same as「ermt__Risk_Classification_Junc__c Object」
+        //     // - ermt__M_Classification__c
+        //     // Build record incident risk junc
+        //     createIncidentRiskJunc(junctionObject, sourceIdClone, newRecordRiskIdMap, newRecordIncidentIdMap);
+        // }
 
-        // Build record risk control juncs not with rel
-        createRiskControlJuncNotWithRel(newRecordRiskIdMap, mapIdOldNewControl);
-        //end Build record risk control juncs not with rel
+        // // Build record risk control juncs not with rel
+        // createRiskControlJuncNotWithRel(newRecordRiskIdMap, mapIdOldNewControl);
+        // //end Build record risk control juncs not with rel
 
-        //Build record incident risk junc
-        //In case there is ermt__incident__c -「New incident object」, but no ermt__risk__c -「New risk object」then、
-        //will create ermt__risk__c as「risk object」
-        createIncidentRiskJuncNotWithRel(newRecordIncidentIdMap, newRecordRiskIdMap);
-        // Use Sort method in list before performing DML operation
+        // //Build record incident risk junc
+        // //In case there is ermt__incident__c -「New incident object」, but no ermt__risk__c -「New risk object」then、
+        // //will create ermt__risk__c as「risk object」
+        // createIncidentRiskJuncNotWithRel(newRecordIncidentIdMap, newRecordRiskIdMap);
+        // // Use Sort method in list before performing DML operation
 
-        if (this.listRecordSObjectJunc.size() > 0) {
-            this.listRecordSObjectJunc.sort();
-        }
+        // if (this.listRecordSObjectJunc.size() > 0) {
+        //     this.listRecordSObjectJunc.sort();
+        // }
     }
 
     /**
@@ -190,36 +190,36 @@ public with sharing class SobjectCloneUtils {
      * @return : void method
      **/
     private void createIncidentRiskJuncNotWithRel(Map<Id, Id> newRecordIncidentIdMap, Map<Id, Id> newRecordRiskIdMap) {
-        if (newRecordIncidentIdMap.size() > 0) {
-            List<Id> listIdIncidentClone = new List<Id>();
-            listIdIncidentClone.addAll(newRecordIncidentIdMap.keySet());
+        // if (newRecordIncidentIdMap.size() > 0) {
+        //     List<Id> listIdIncidentClone = new List<Id>();
+        //     listIdIncidentClone.addAll(newRecordIncidentIdMap.keySet());
 
-            List<SObject> listIncidentRiskJunc = getIncidentRiskJuncByIdIncident(listIdIncidentClone);
-            Map<Id, List<Id>> mapIncidentRiskJunc = new Map<Id, List<Id>>();
+        //     List<SObject> listIncidentRiskJunc = getIncidentRiskJuncByIdIncident(listIdIncidentClone);
+        //     Map<Id, List<Id>> mapIncidentRiskJunc = new Map<Id, List<Id>>();
 
-            if (listIncidentRiskJunc.size() > 0) {
-                mapIncidentRiskJunc = getObjectCustomFieldMap(listIncidentRiskJunc, 'ermt__Incident__c', 'ermt__Risk__c');
-            }
+        //     if (listIncidentRiskJunc.size() > 0) {
+        //         mapIncidentRiskJunc = getObjectCustomFieldMap(listIncidentRiskJunc, 'ermt__Incident__c', 'ermt__Risk__c');
+        //     }
 
-            List<Id> oldRiskJunc = newRecordRiskIdMap.values();
+        //     List<Id> oldRiskJunc = newRecordRiskIdMap.values();
 
-            for (Id incidentCloneId : newRecordIncidentIdMap.keySet()) {
-                List<Id> listRiskIdClone = mapIncidentRiskJunc.get(incidentCloneId) == null
-                    ? new List<Id>()
-                    : mapIncidentRiskJunc.get(incidentCloneId);
+        //     for (Id incidentCloneId : newRecordIncidentIdMap.keySet()) {
+        //         List<Id> listRiskIdClone = mapIncidentRiskJunc.get(incidentCloneId) == null
+        //             ? new List<Id>()
+        //             : mapIncidentRiskJunc.get(incidentCloneId);
 
-                for (Id idRisk : listRiskIdClone) {
-                    if (listRiskIdClone.contains(idRisk) && newRecordRiskIdMap.get(idRisk) == null) {
-                        this.listRecordSObjectJunc.add(
-                            new ermt__Incident_Risk_Junc__c(
-                                ermt__Risk__c = (Id) idRisk,
-                                ermt__Incident__c = (Id) newRecordIncidentIdMap.get(incidentCloneId)
-                            )
-                        );
-                    }
-                }
-            }
-        }
+        //         for (Id idRisk : listRiskIdClone) {
+        //             if (listRiskIdClone.contains(idRisk) && newRecordRiskIdMap.get(idRisk) == null) {
+        //                 this.listRecordSObjectJunc.add(
+        //                     new ermt__Incident_Risk_Junc__c(
+        //                         ermt__Risk__c = (Id) idRisk,
+        //                         ermt__Incident__c = (Id) newRecordIncidentIdMap.get(incidentCloneId)
+        //                     )
+        //                 );
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     /**
@@ -236,74 +236,74 @@ public with sharing class SobjectCloneUtils {
      * create record juncs relationship when in case
      */
     private void createRiskControlJuncNotWithRel(Map<Id, Id> newRecordRiskIdMap, Map<Id, Id> mapIdOldNewControl) {
-        List<Id> listIdControlClone = new List<Id>();
-        List<Id> listRiskIdNewRecord = new List<Id>();
-        listRiskIdNewRecord.addAll(newRecordRiskIdMap.keySet());
-        listIdControlClone.addAll(mapIdOldNewControl.keySet());
-        List<SObject> listJuncsControl = getControlJuncsByIdControl(listIdControlClone, listRiskIdNewRecord);
-        Map<Id, List<Id>> mapRiskControlJunc = getObjectCustomFieldMap(listJuncsControl, 'ermt__Control__c', 'ermt__Risk__c');
+        // List<Id> listIdControlClone = new List<Id>();
+        // List<Id> listRiskIdNewRecord = new List<Id>();
+        // listRiskIdNewRecord.addAll(newRecordRiskIdMap.keySet());
+        // listIdControlClone.addAll(mapIdOldNewControl.keySet());
+        // List<SObject> listJuncsControl = getControlJuncsByIdControl(listIdControlClone, listRiskIdNewRecord);
+        // Map<Id, List<Id>> mapRiskControlJunc = getObjectCustomFieldMap(listJuncsControl, 'ermt__Control__c', 'ermt__Risk__c');
 
-        for (Id controlId : mapRiskControlJunc.keySet()) {
-            List<Id> listRiskRel = mapRiskControlJunc.get(controlId);
-            Id newIdControlClone = (Id) mapIdOldNewControl.get(controlId);
+        // for (Id controlId : mapRiskControlJunc.keySet()) {
+        //     List<Id> listRiskRel = mapRiskControlJunc.get(controlId);
+        //     Id newIdControlClone = (Id) mapIdOldNewControl.get(controlId);
 
-            for (Id riskRelId : listRiskRel) {
-                this.listRecordSObjectJunc.add(new ermt__Risk_Control_Junc__c(ermt__Risk__c = riskRelId, ermt__Control__c = newIdControlClone));
-            }
-        }
+        //     for (Id riskRelId : listRiskRel) {
+        //         this.listRecordSObjectJunc.add(new ermt__Risk_Control_Junc__c(ermt__Risk__c = riskRelId, ermt__Control__c = newIdControlClone));
+        //     }
+        // }
     }
 
     private void createRiskControlJunc(SObject junctionObject, Id sourceIdClone, Map<Id, Id> newRecordRiskIdMap, Map<Id, Id> mapIdOldNewControl) {
-        String childRelationshipName = 'ermt__Risk_Control__r';
+        // String childRelationshipName = 'ermt__Risk_Control__r';
 
-        if (junctionObject != null && junctionObject.getSObjects(childRelationshipName) != null) {
-            Map<Id, List<Id>> mapRiskControlJunc = getObjectCustomFieldMap(
-                junctionObject.getSObjects(childRelationshipName),
-                'ermt__Risk__c',
-                'ermt__Control__c'
-            );
+        // if (junctionObject != null && junctionObject.getSObjects(childRelationshipName) != null) {
+        //     Map<Id, List<Id>> mapRiskControlJunc = getObjectCustomFieldMap(
+        //         junctionObject.getSObjects(childRelationshipName),
+        //         'ermt__Risk__c',
+        //         'ermt__Control__c'
+        //     );
 
-            if (mapRiskControlJunc.get(sourceIdClone) != null) {
-                List<Id> listOldIdControl = mapRiskControlJunc.get(sourceIdClone);
+        //     if (mapRiskControlJunc.get(sourceIdClone) != null) {
+        //         List<Id> listOldIdControl = mapRiskControlJunc.get(sourceIdClone);
 
-                for (Id oldIdNewControl : mapIdOldNewControl.keySet()) {
-                    if (listOldIdControl.contains(oldIdNewControl)) {
-                        this.listRecordSObjectJunc.add(
-                            new ermt__Risk_Control_Junc__c(
-                                ermt__Risk__c = (Id) newRecordRiskIdMap.get(sourceIdClone),
-                                ermt__Control__c = (Id) mapIdOldNewControl.get(oldIdNewControl)
-                            )
-                        );
-                    }
-                }
-            }
-        }
+        //         for (Id oldIdNewControl : mapIdOldNewControl.keySet()) {
+        //             if (listOldIdControl.contains(oldIdNewControl)) {
+        //                 this.listRecordSObjectJunc.add(
+        //                     new ermt__Risk_Control_Junc__c(
+        //                         ermt__Risk__c = (Id) newRecordRiskIdMap.get(sourceIdClone),
+        //                         ermt__Control__c = (Id) mapIdOldNewControl.get(oldIdNewControl)
+        //                     )
+        //                 );
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     private void createRiskClassificationJunc(SObject junctionObject, Id sourceIdClone, Map<Id, Id> newRecordRiskIdMap) {
-        String childRelationshipName = 'ermt__Risk_Classification_Junc__r';
+        // String childRelationshipName = 'ermt__Risk_Classification_Junc__r';
 
-        // get record recordInsertMap
-        if (junctionObject != null && junctionObject.getSObjects(childRelationshipName) != null) {
-            Map<Id, List<Id>> mapRiskClassificationJunc = getObjectCustomFieldMap(
-                junctionObject.getSObjects(childRelationshipName),
-                'ermt__Risk__c',
-                'ermt__M_Classification__c'
-            );
+        // // get record recordInsertMap
+        // if (junctionObject != null && junctionObject.getSObjects(childRelationshipName) != null) {
+        //     Map<Id, List<Id>> mapRiskClassificationJunc = getObjectCustomFieldMap(
+        //         junctionObject.getSObjects(childRelationshipName),
+        //         'ermt__Risk__c',
+        //         'ermt__M_Classification__c'
+        //     );
 
-            if (mapRiskClassificationJunc.get(sourceIdClone) != null) {
-                List<Id> listIdMClassification = mapRiskClassificationJunc.get(sourceIdClone);
+        //     if (mapRiskClassificationJunc.get(sourceIdClone) != null) {
+        //         List<Id> listIdMClassification = mapRiskClassificationJunc.get(sourceIdClone);
 
-                for (Id idMClassification : listIdMClassification) {
-                    this.listRecordSObjectJunc.add(
-                        new ermt__Risk_Classification_Junc__c(
-                            ermt__Risk__c = (Id) newRecordRiskIdMap.get(sourceIdClone),
-                            ermt__M_Classification__c = idMClassification
-                        )
-                    );
-                }
-            }
-        }
+        //         for (Id idMClassification : listIdMClassification) {
+        //             this.listRecordSObjectJunc.add(
+        //                 new ermt__Risk_Classification_Junc__c(
+        //                     ermt__Risk__c = (Id) newRecordRiskIdMap.get(sourceIdClone),
+        //                     ermt__M_Classification__c = idMClassification
+        //                 )
+        //             );
+        //         }
+        //     }
+        // }
     }
 
     private void pushRecordIncidentRiskJunc(
@@ -312,16 +312,16 @@ public with sharing class SobjectCloneUtils {
         Map<Id, Id> newRecordRiskIdMap,
         Id sourceIdClone
     ) {
-        for (Id oldIncident : newRecordIncidentIdMap.keySet()) {
-            if (listIdIncidentClone.contains(oldIncident)) {
-                this.listRecordSObjectJunc.add(
-                    new ermt__Incident_Risk_Junc__c(
-                        ermt__Risk__c = (Id) newRecordRiskIdMap.get(sourceIdClone),
-                        ermt__Incident__c = (Id) newRecordIncidentIdMap.get(oldIncident)
-                    )
-                );
-            }
-        }
+        // for (Id oldIncident : newRecordIncidentIdMap.keySet()) {
+        //     if (listIdIncidentClone.contains(oldIncident)) {
+        //         this.listRecordSObjectJunc.add(
+        //             new ermt__Incident_Risk_Junc__c(
+        //                 ermt__Risk__c = (Id) newRecordRiskIdMap.get(sourceIdClone),
+        //                 ermt__Incident__c = (Id) newRecordIncidentIdMap.get(oldIncident)
+        //             )
+        //         );
+        //     }
+        // }
     }
 
     private void createIncidentRiskJunc(
@@ -330,35 +330,35 @@ public with sharing class SobjectCloneUtils {
         Map<Id, Id> newRecordRiskIdMap,
         Map<Id, Id> newRecordIncidentIdMap
     ) {
-        String childRelationshipName = 'ermt__Incident_Risk_Juncs__r';
+        // String childRelationshipName = 'ermt__Incident_Risk_Juncs__r';
 
-        if (junctionObject != null && junctionObject.getSObjects(childRelationshipName) != null) {
-            Map<Id, List<Id>> mapIncidentRiskJunc = getObjectCustomFieldMap(
-                junctionObject.getSObjects(childRelationshipName),
-                'ermt__Risk__c',
-                'ermt__Incident__c'
-            );
-            List<Id> listIdIncidentClone = mapIncidentRiskJunc.get(sourceIdClone);
+        // if (junctionObject != null && junctionObject.getSObjects(childRelationshipName) != null) {
+        //     Map<Id, List<Id>> mapIncidentRiskJunc = getObjectCustomFieldMap(
+        //         junctionObject.getSObjects(childRelationshipName),
+        //         'ermt__Risk__c',
+        //         'ermt__Incident__c'
+        //     );
+        //     List<Id> listIdIncidentClone = mapIncidentRiskJunc.get(sourceIdClone);
 
-            //In case both ermt__risk__c and both ermt__incident__c have「New risk object」and「New insident object」then
-            //will Create with ermt__risk__c being「New risk object」、ermt__incident__c being「New insident object」
-            if (newRecordIncidentIdMap.size() > 0) {
-                pushRecordIncidentRiskJunc(newRecordIncidentIdMap, listIdIncidentClone, newRecordRiskIdMap, sourceIdClone);
-            }
-            //In case there is ermt__Risk__c
-            // -「New risk object」, but no ermt__incident__c
-            // -「New incident object」then、will Create with ermt__incident__c as「incident object」
-            for (Id idIncidentJunc : listIdIncidentClone) {
-                if (newRecordIncidentIdMap.containsKey(((Id) idIncidentJunc)) == false) {
-                    this.listRecordSObjectJunc.add(
-                        new ermt__Incident_Risk_Junc__c(
-                            ermt__Risk__c = (Id) newRecordRiskIdMap.get(sourceIdClone),
-                            ermt__Incident__c = (Id) idIncidentJunc
-                        )
-                    );
-                }
-            }
-        }
+        //     //In case both ermt__risk__c and both ermt__incident__c have「New risk object」and「New insident object」then
+        //     //will Create with ermt__risk__c being「New risk object」、ermt__incident__c being「New insident object」
+        //     if (newRecordIncidentIdMap.size() > 0) {
+        //         pushRecordIncidentRiskJunc(newRecordIncidentIdMap, listIdIncidentClone, newRecordRiskIdMap, sourceIdClone);
+        //     }
+        //     //In case there is ermt__Risk__c
+        //     // -「New risk object」, but no ermt__incident__c
+        //     // -「New incident object」then、will Create with ermt__incident__c as「incident object」
+        //     for (Id idIncidentJunc : listIdIncidentClone) {
+        //         if (newRecordIncidentIdMap.containsKey(((Id) idIncidentJunc)) == false) {
+        //             this.listRecordSObjectJunc.add(
+        //                 new ermt__Incident_Risk_Junc__c(
+        //                     ermt__Risk__c = (Id) newRecordRiskIdMap.get(sourceIdClone),
+        //                     ermt__Incident__c = (Id) idIncidentJunc
+        //                 )
+        //             );
+        //         }
+        //     }
+        // }
     }
 
     /**
@@ -435,23 +435,23 @@ public with sharing class SobjectCloneUtils {
         return this.recordInsertMap.get(childRelName);
     }
 
-    private List<SObject> getIncidentRiskJuncByIdIncident(List<Id> listIdIncidentClone) {
-        List<SObject> queryJunc = [
-            SELECT Id, ermt__Risk__c, ermt__Incident__c
-            FROM ermt__Incident_Risk_Junc__c
-            WHERE ermt__Incident__c IN :listIdIncidentClone
-        ];
-        return queryJunc;
-    }
+    // private List<SObject> getIncidentRiskJuncByIdIncident(List<Id> listIdIncidentClone) {
+    //     List<SObject> queryJunc = [
+    //         SELECT Id, ermt__Risk__c, ermt__Incident__c
+    //         FROM ermt__Incident_Risk_Junc__c
+    //         WHERE ermt__Incident__c IN :listIdIncidentClone
+    //     ];
+    //     return queryJunc;
+    // }
 
-    private List<SObject> getControlJuncsByIdControl(List<Id> listIdControlClone, List<Id> listRiskIdNewRecord) {
-        List<SObject> queryJunc = [
-            SELECT ermt__Control__c, ermt__Risk__c
-            FROM ermt__Risk_Control_Junc__c
-            WHERE ermt__Control__c IN :listIdControlClone AND ermt__Risk__c NOT IN :listRiskIdNewRecord
-        ];
-        return queryJunc;
-    }
+    // private List<SObject> getControlJuncsByIdControl(List<Id> listIdControlClone, List<Id> listRiskIdNewRecord) {
+    //     List<SObject> queryJunc = [
+    //         SELECT ermt__Control__c, ermt__Risk__c
+    //         FROM ermt__Risk_Control_Junc__c
+    //         WHERE ermt__Control__c IN :listIdControlClone AND ermt__Risk__c NOT IN :listRiskIdNewRecord
+    //     ];
+    //     return queryJunc;
+    // }
 
     private Map<string, ChildRelationshipProps> getRelationshipDetails(Map<String, String> relationshipMapClone) {
         Map<String, ChildRelationship> childRelationMap = getChildRel();
@@ -499,28 +499,28 @@ public with sharing class SobjectCloneUtils {
         return resultQueryClone;
     }
 
-    private void getRiskJuncWithRel() {
-        Set<Id> listIdRisk = new Set<Id>();
+    // private void getRiskJuncWithRel() {
+    //     Set<Id> listIdRisk = new Set<Id>();
 
-        if (this.relatedNameListIdMap.get('ERMT__RISKORGANIZATION__R') != null) {
-            listIdRisk = this.relatedNameListIdMap.get('ERMT__RISKORGANIZATION__R').keySet();
-        }
+    //     if (this.relatedNameListIdMap.get('ERMT__RISKORGANIZATION__R') != null) {
+    //         listIdRisk = this.relatedNameListIdMap.get('ERMT__RISKORGANIZATION__R').keySet();
+    //     }
 
-        if (listIdRisk.size() > 0) {
-            Map<Id, SObject> mapFromList = new Map<Id, SObject>(
-                [
-                    SELECT
-                        Id,
-                        (SELECT Id, ermt__Risk__c, ermt__Control__c FROM ermt__Risk_Control__r),
-                        (SELECT Id, ermt__Risk__c, ermt__Incident__c FROM ermt__Incident_Risk_Juncs__r),
-                        (SELECT Id, ermt__Risk__c, ermt__M_Classification__c FROM ermt__Risk_Classification_Junc__r)
-                    FROM ermt__Risk__c
-                    WHERE Id IN :listIdRisk
-                ]
-            );
-            this.cloneJuncRecordMap = mapFromList;
-        }
-    }
+    //     if (listIdRisk.size() > 0) {
+    //         Map<Id, SObject> mapFromList = new Map<Id, SObject>(
+    //             [
+    //                 SELECT
+    //                     Id,
+    //                     (SELECT Id, ermt__Risk__c, ermt__Control__c FROM ermt__Risk_Control__r),
+    //                     (SELECT Id, ermt__Risk__c, ermt__Incident__c FROM ermt__Incident_Risk_Juncs__r),
+    //                     (SELECT Id, ermt__Risk__c, ermt__M_Classification__c FROM ermt__Risk_Classification_Junc__r)
+    //                 FROM ermt__Risk__c
+    //                 WHERE Id IN :listIdRisk
+    //             ]
+    //         );
+    //         this.cloneJuncRecordMap = mapFromList;
+    //     }
+    // }
 
     private Map<String, ChildRelationshipProps> getChildRelName(Map<String, ChildRelationship> childRelation, Set<String> listRelStr) {
         Map<String, ChildRelationshipProps> childRelName = new Map<String, ChildRelationshipProps>();
@@ -665,27 +665,22 @@ public with sharing class SobjectCloneUtils {
     private static Map<String, List<String>> getFilterClonableFields() {
         Map<String, List<String>> fieldObjectNameMap = OBJECT_FIELDS_SETTING;
 
-        for (CopyAccountConfiguration__mdt config : COPY_ACCOUNT_CONFIG) {
-            String objectApiName = String.valueOf(config.ObjectApiName__c);
+        for (CloneConfiguation__mdt config : COPY_CONFIG) {
+            String objectApiName = String.valueOf(config.ObjectName__c);
 
             if (fieldObjectNameMap.get(objectApiName) == null) {
                 fieldObjectNameMap.put(objectApiName, new List<String>());
             }
-            fieldObjectNameMap.get(objectApiName).add(String.valueOf(config.ApiName__c));
+            fieldObjectNameMap.get(objectApiName).add(String.valueOf(config.FieldName__c));
         }
         return fieldObjectNameMap;
     }
 
-    private static List<CopyAccountConfiguration__mdt> getConfigCopyAccount() {
-        return [SELECT ApiName__c, ObjectApiName__c FROM CopyAccountConfiguration__mdt WHERE IsActive__c = TRUE];
+    private static List<CloneConfiguation__mdt> getCloneConfigMeta() {
+        return [SELECT FieldName__c, ObjectName__c FROM CloneConfiguation__mdt WHERE Active__c = TRUE];
     }
 
-    private static final Map<String, List<String>> OBJECT_FIELDS_SETTING = new Map<String, List<String>>{
-        'Account' => new List<String>{ 'Id', 'Name', 'RecordTypeId', 'ermt__ParentOrganization__c', 'ParentId' },
-        'ermt__Risk__c' => new List<String>{ 'Id', 'Name', 'ermt__Organization__c', 'RecordTypeId', 'ERMT__RISKPROFILE__C' },
-        'ermt__Incident__c' => new List<String>{ 'Id', 'Name', 'ermt__Organization__c', 'RecordTypeId', 'INTEGRATEDRECORD__C' },
-        'ermt__Control__c' => new List<String>{ 'Id', 'ermt__AssignedOrg__c' }
-    };
+    private static final Map<String, List<String>> OBJECT_FIELDS_SETTING = new Map<String, List<String>>{};
 
     private Schema.SObjectType getSObjectTypeCloneByID(Id recordClone) {
         try {

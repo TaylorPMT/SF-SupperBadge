@@ -1,9 +1,9 @@
 public with sharing class CopySObjectCtlr {
-    private static final String LABEL_COPY_ACCOUNT = System.Label.Label_CopyAccount;
-    public static final Integer MAX_LENGTH_ACCOUNT_NAME = 40;
-
+    private static final String LABEL_CLONE = System.Label.Clone_Prefix;
+    private static final Integer MAX_LENGTH_CLONE = 40;
+    private static final String TOAST_ERROR = System.Label.Toast_Error_Clone;
     @AuraEnabled
-    public static Id copyAccount(String recordId) {
+    public static Id cloneSObject(String recordId) {
         try {
             SobjectCloneUtils cloner = new SobjectCloneUtils(
                 (Id) recordId,
@@ -19,17 +19,16 @@ public with sharing class CopySObjectCtlr {
             cloner.addlookupFieldsMap('INTEGRATEDRECORD__R', 'INTEGRATEDRECORD__C');
             cloner.addlookupFieldsMap('ERMT__RISKPROFILE__R', 'ERMT__RISKPROFILE__C');
 
-            Account beforeCloneAccount = (Account) cloner.clone;
-            String nameClone = String.join(new List<String>{ beforeCloneAccount.Name, LABEL_COPY_ACCOUNT }, '');
-            if (nameClone.length() > MAX_LENGTH_ACCOUNT_NAME) {
-                nameClone = nameClone.substring(0, MAX_LENGTH_ACCOUNT_NAME);
+            SObject beforeSObjectClone = (SObject) cloner.clone;
+            String namePrefix = String.join(new List<String>{ (String) beforeSObjectClone.get('Name'), LABEL_CLONE }, '');
+            if (namePrefix.length() > MAX_LENGTH_CLONE) {
+                namePrefix = namePrefix.substring(0, MAX_LENGTH_CLONE);
             }
-            beforeCloneAccount.Name = nameClone;
-            Id accountId = cloner.save();
-            return accountId;
+            beforeSObjectClone.put('Name', namePrefix);
+            Id IdRecord = cloner.save();
+            return IdRecord;
         } catch (Exception e) {
-            String text = 'エラー 部署コピー: {0} {1} システム管理者までご連絡ください';
-            String messageError = String.format(text, new List<String>{ e.getMessage(), '</br>' });
+            String messageError = String.format(TOAST_ERROR, new List<String>{ e.getMessage(), '</br>' });
             throw new AuraHandledException(messageError);
         }
     }
